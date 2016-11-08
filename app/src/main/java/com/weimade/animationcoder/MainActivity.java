@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         tips = (TextView) findViewById(R.id.sample_text);
         tips.setText("初始化中，请稍后");
 
-        goPlayerBtn = (Button) findViewById(R.id.goPlayerActivity);
+        goPlayerBtn = (Button) findViewById(R.id.goPlayerBtn);
         goPlayerBtn.setVisibility(View.INVISIBLE);
         goPlayerBtn.setOnClickListener(new View.OnClickListener() {
             @Override

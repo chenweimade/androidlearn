@@ -29,23 +29,23 @@
         android:minHeight="30dp" />
 
     <Button
-        android:text="Button"
+        android:text="Player"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:id="@+id/goPlayerActivity" />
+        android:id="@+id/goPlayerBtn" />
 
     <Button
-        android:text="download"
+        android:text="InitDownload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/download"
-        android:layout_below="@+id/goPlayerActivity"
-        android:layout_alignEnd="@+id/goPlayerActivity" />
+        android:layout_below="@+id/goPlayerBtn"
+        android:layout_alignEnd="@+id/goPlayerBtn" />
 
     <Button
-        android:text="record"
+        android:text="CameraCapture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/recordBtn"
