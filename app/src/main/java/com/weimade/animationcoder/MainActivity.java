@@ -1,8 +1,12 @@
 package com.weimade.animationcoder;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -28,14 +32,28 @@ public class MainActivity extends AppCompatActivity {
     }
     public  static String INIT_FLAG = "initflag";// do not change
     Button goPlayerBtn ;
-    Button goRecorderBtn ;
+    Button goCaptureBtn ;
 
     TextView tips;
+    final   int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 100;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        goCaptureBtn = (Button) findViewById(R.id.captureBtn);
+        goCaptureBtn.setVisibility(View.INVISIBLE);
+        goCaptureBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CameraCaptureActivity.class));
+            }
+        });
+
+        tips = (TextView) findViewById(R.id.sample_text);
+        tips.setText("初始化中，请稍后");
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean(INIT_FLAG, false)) {
@@ -45,11 +63,12 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean(INIT_FLAG, true);
             editor.commit();
+        }else {
+            goCaptureBtn.setVisibility(View.VISIBLE);
         }
 
         // Example of a call to a native method
-        tips = (TextView) findViewById(R.id.sample_text);
-        tips.setText("初始化中，请稍后");
+
 
         goPlayerBtn = (Button) findViewById(R.id.goPlayerBtn);
         goPlayerBtn.setVisibility(View.INVISIBLE);
@@ -60,20 +79,52 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        String[] mMovieFiles = MiscUtils.getFiles(new File(FileUtil.getPath()), "*.mp4");
-        if(mMovieFiles.length > 0){
-            //check the files count
-            goPlayerBtn.setVisibility(View.VISIBLE);
+
+        if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if ( !ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.RECORD_AUDIO)) {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
+                return;
+            }
         }
 
-        goRecorderBtn = (Button) findViewById(R.id.recordBtn);
-        goRecorderBtn.setVisibility(View.INVISIBLE);
-        goRecorderBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, CameraCaptureActivity.class));
+
+        String[] mMovieFiles = MiscUtils.getFiles(new File(FileUtil.getPath()), "*.mp4");
+        if(mMovieFiles.length > 0){//has inited
+            //check the files count
+            goPlayerBtn.setVisibility(View.VISIBLE);
+        }else {
+
+        }
+
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_RECORD_AUDIO: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
             }
-        });
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
     private void initApp(){
         //http://112.74.80.186:9999/test.zip
@@ -92,10 +143,10 @@ public class MainActivity extends AppCompatActivity {
                         MsgUtil.toastMsg(getApplicationContext(),"错误：解压素材文件失败！！！");
                         e.printStackTrace();
                     }
-                    goRecorderBtn.setVisibility(View.VISIBLE);
+                    goCaptureBtn.setVisibility(View.VISIBLE);
                 }else{
                     MsgUtil.toastMsg(getApplicationContext(),"错误：测试素材文件下载失败！！！");
-                    goRecorderBtn.setVisibility(View.INVISIBLE);
+                    goCaptureBtn.setVisibility(View.INVISIBLE);
                 }
             }
         });

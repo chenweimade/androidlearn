@@ -17,6 +17,7 @@
 package com.weimade.animationcoder;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.EGL14;
@@ -40,6 +41,7 @@ import android.widget.TextView;
 import com.weimade.animationcoder.gles.FullFrameRect;
 import com.weimade.animationcoder.gles.Texture2dProgram;
 import com.weimade.animationcoder.utils.FileUtil;
+import com.weimade.animationcoder.utils.MiscUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +49,8 @@ import java.lang.ref.WeakReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import static com.weimade.animationcoder.R.id.goPlayerBtn;
 
 /**
  * Shows the camera preview on screen while simultaneously recording it to a .mp4 file.
@@ -142,7 +146,7 @@ public class CameraCaptureActivity extends Activity
     private boolean mRecordingEnabled;      // controls button state
 
     private int mCameraPreviewWidth, mCameraPreviewHeight;
-
+    Button goPlayerBtn ;
     // this is static so it survives activity restarts
     private static TextureMovieEncoder sVideoEncoder = new TextureMovieEncoder();
 
@@ -179,6 +183,15 @@ public class CameraCaptureActivity extends Activity
         mGLView.setRenderer(mRenderer);
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
+        goPlayerBtn = (Button) findViewById(R.id.navtoPlayer);
+        goPlayerBtn.setVisibility(View.INVISIBLE);
+        goPlayerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CameraCaptureActivity.this, PlayMovieSurfaceActivity.class));
+            }
+        });
+
         Log.d(TAG, "onCreate complete: " + this);
     }
 
@@ -191,7 +204,7 @@ public class CameraCaptureActivity extends Activity
 
         // Set the preview aspect ratio.
         AspectFrameLayout layout = (AspectFrameLayout) findViewById(R.id.cameraPreview_afl);
-        layout.setAspectRatio((double) mCameraPreviewWidth / mCameraPreviewHeight);
+        layout.setAspectRatio((double)  mCameraPreviewHeight/  mCameraPreviewWidth);
 
         mGLView.onResume();
         mGLView.queueEvent(new Runnable() {
@@ -274,6 +287,7 @@ public class CameraCaptureActivity extends Activity
 
         Camera.Parameters parms = mCamera.getParameters();
 
+
         CameraUtils.choosePreviewSize(parms, desiredWidth, desiredHeight);
 
         // Give the camera a hint that we're recording video.  This can have a big
@@ -282,7 +296,7 @@ public class CameraCaptureActivity extends Activity
 
         // leave the frame rate set to default
         mCamera.setParameters(parms);
-       // setCameraDisplayOrientation(CameraCaptureActivity.this,cameraId,mCamera);
+        setCameraDisplayOrientation(CameraCaptureActivity.this,cameraId,mCamera);
         int[] fpsRange = new int[2];
         Camera.Size mCameraPreviewSize = parms.getPreviewSize();
         parms.getPreviewFpsRange(fpsRange);
@@ -368,6 +382,11 @@ public class CameraCaptureActivity extends Activity
                 R.string.toggleRecordingOff : R.string.toggleRecordingOn;
         toggleRelease.setText(id);
 
+        String[] mMovieFiles = MiscUtils.getFiles(new File(FileUtil.getPath()), "*.mp4");
+        if(mMovieFiles.length > 0){//has inited
+            //check the files count
+            goPlayerBtn.setVisibility(View.VISIBLE);
+        }
         //CheckBox cb = (CheckBox) findViewById(R.id.rebindHack_checkbox);
         //cb.setChecked(TextureRender.sWorkAroundContextProblem);
     }

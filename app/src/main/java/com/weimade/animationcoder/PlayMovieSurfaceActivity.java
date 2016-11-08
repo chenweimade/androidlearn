@@ -114,7 +114,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
     private static final int ProcessImg = 1;
     private static final int ProcessAudio = 2;
     private static String collageViewTag = "collageViewTag";
-    String gifPath = FileUtil.getPath()+"/mali_1.gif";
+    String gifPath = FileUtil.getPath()+"/mali.gif";
 
 
     private Handler handler = new Handler() {
