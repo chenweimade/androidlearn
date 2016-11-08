@@ -22,10 +22,12 @@ import android.hardware.Camera;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -37,6 +39,7 @@ import android.widget.TextView;
 
 import com.weimade.animationcoder.gles.FullFrameRect;
 import com.weimade.animationcoder.gles.Texture2dProgram;
+import com.weimade.animationcoder.utils.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,7 +151,8 @@ public class CameraCaptureActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_capture);
 
-        File outputFile = new File(getFilesDir(), "camera-test.mp4");
+        String recordFilename = "rec_" + System.currentTimeMillis() + ".mp4";
+        File outputFile = new File(FileUtil.getPath(), recordFilename);
         TextView fileText = (TextView) findViewById(R.id.cameraOutputFile_text);
         fileText.setText(outputFile.toString());
 
@@ -251,9 +255,11 @@ public class CameraCaptureActivity extends Activity
 
         // Try to find a front-facing camera (e.g. for videoconferencing).
         int numCameras = Camera.getNumberOfCameras();
+        int cameraId = 0;
         for (int i = 0; i < numCameras; i++) {
             Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            cameraId = i;
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                 mCamera = Camera.open(i);
                 break;
             }
@@ -276,7 +282,7 @@ public class CameraCaptureActivity extends Activity
 
         // leave the frame rate set to default
         mCamera.setParameters(parms);
-
+       // setCameraDisplayOrientation(CameraCaptureActivity.this,cameraId,mCamera);
         int[] fpsRange = new int[2];
         Camera.Size mCameraPreviewSize = parms.getPreviewSize();
         parms.getPreviewFpsRange(fpsRange);
@@ -292,6 +298,31 @@ public class CameraCaptureActivity extends Activity
 
         mCameraPreviewWidth = mCameraPreviewSize.width;
         mCameraPreviewHeight = mCameraPreviewSize.height;
+    }
+
+    public static void setCameraDisplayOrientation(Activity activity,
+                                                   int cameraId, android.hardware.Camera camera) {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
     }
 
     /**
@@ -440,6 +471,7 @@ class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
     private FullFrameRect mFullScreen;
 
     private final float[] mSTMatrix = new float[16];
+
     private int mTextureId;
 
     private SurfaceTexture mSurfaceTexture;
@@ -611,7 +643,6 @@ class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
         } else {
             mRecordingStatus = RECORDING_OFF;
         }
-
         // Set up the texture blitter that will be used for on-screen display.  This
         // is *not* applied to the recording, because that uses a separate shader.
         mFullScreen = new FullFrameRect(
@@ -652,7 +683,7 @@ class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
                     Log.d(TAG, "START recording");
                     // start recording
                     mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(
-                            mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
+                            mOutputFile, mIncomingWidth, mIncomingHeight, 1000000, EGL14.eglGetCurrentContext()));
                     mRecordingStatus = RECORDING_ON;
                     break;
                 case RECORDING_RESUMED:

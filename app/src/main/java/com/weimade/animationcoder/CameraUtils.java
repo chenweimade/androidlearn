@@ -49,6 +49,7 @@ public class CameraUtils {
         //}
 
         for (Camera.Size size : parms.getSupportedPreviewSizes()) {
+            System.out.println(size.width + "-----" +size.height);
             if (size.width == width && size.height == height) {
                 parms.setPreviewSize(width, height);
                 return;

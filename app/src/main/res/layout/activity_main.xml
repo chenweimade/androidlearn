@@ -14,7 +14,19 @@
         android:id="@+id/sample_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+
         android:text="Hello World!" />
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:maxHeight="30dp"
+        android:minHeight="30dp" />
 
     <Button
         android:text="Button"
@@ -23,4 +35,21 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/goPlayerActivity" />
+
+    <Button
+        android:text="download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/download"
+        android:layout_below="@+id/goPlayerActivity"
+        android:layout_alignEnd="@+id/goPlayerActivity" />
+
+    <Button
+        android:text="record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/recordBtn"
+        android:layout_below="@+id/download"
+        android:layout_alignStart="@+id/download"
+        android:layout_marginTop="12dp" />
 </RelativeLayout>

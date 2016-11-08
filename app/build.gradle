@@ -34,11 +34,15 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.2'
     compile 'com.writingminds:FFmpegAndroid:0.3.2'
     compile 'org.apache.commons:commons-lang3:3.4'
+    compile group: 'com.googlecode.android-query', name: 'android-query', version: '0.25.9'
 
     compile project(':collage-views')
+    compile project(':library')
+
     testCompile 'junit:junit:4.12'
 }

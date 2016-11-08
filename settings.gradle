@@ -1,1 +1,2 @@
-include ':app',':collage-views'
+include ':app', ':collage-views', ':library'
+project(':library').projectDir = new File('cameraview/library')

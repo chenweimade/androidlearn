@@ -24,7 +24,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".CameraCaptureActivity" >
 
-    <com.android.grafika.AspectFrameLayout
+    <com.weimade.animationcoder.AspectFrameLayout
         android:id="@+id/cameraPreview_afl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,10 +37,10 @@
         <android.opengl.GLSurfaceView
             android:id="@+id/cameraPreview_surfaceView"
             android:layout_width="match_parent"
+
             android:layout_height="match_parent"
             android:layout_gravity="center" />
-    </com.android.grafika.AspectFrameLayout>
-
+    </com.weimade.animationcoder.AspectFrameLayout>
     <Button
         android:id="@+id/toggleRecording_button"
         style="?android:attr/buttonStyleSmall"

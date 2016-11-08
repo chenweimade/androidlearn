@@ -10,6 +10,13 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+    ext {
+        buildToolsVersion = '24.0.2'
+        	    compileSdkVersion = 24
+        	    minSdkVersion = 9
+        	    targetSdkVersion = 24
+        	    supportLibraryVersion = '24.2.1'
+    }
 }
 
 allprojects {

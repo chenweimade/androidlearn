@@ -8,6 +8,9 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by wangyang on 15/11/27.
@@ -18,7 +21,7 @@ public class FileUtil {
     public static final File externalStorageDirectory = Environment.getExternalStorageDirectory();
     public static String packageFilesDirectory = null;
     public static String storagePath = null;
-    private static String mDefaultFolder = "libCGE";
+    private static String mDefaultFolder = "cycoder";
 
     public static void setDefaultFolder(String defaultFolder) {
         mDefaultFolder = defaultFolder;
@@ -122,6 +125,51 @@ public class FileUtil {
         }
 
         return content;
+    }
+
+    public static void unzip(String zipFile, String location) throws IOException {
+        byte[] buffer = new byte[1024];
+        int count;
+
+        try {
+            File f = new File(location);
+            if(!f.isDirectory()) {
+                f.mkdirs();
+            }
+            ZipInputStream zin = new ZipInputStream(new FileInputStream(zipFile));
+            try {
+                ZipEntry ze = null;
+                while ((ze = zin.getNextEntry()) != null) {
+                    String path = location + ze.getName();
+
+                    if (ze.isDirectory()) {
+                        File unzipFile = new File(path);
+                        if(!unzipFile.isDirectory()) {
+                            unzipFile.mkdirs();
+                        }
+                    }
+                    else {
+                        FileOutputStream fout = new FileOutputStream(path, false);
+                        try {
+                            while ((count = zin.read(buffer)) != -1)
+                            {
+                                fout.write(buffer, 0, count);
+                            }
+                            zin.closeEntry();
+                        }
+                        finally {
+                            fout.close();
+                        }
+                    }
+                }
+            }
+            finally {
+                zin.close();
+            }
+        }
+        catch (Exception e) {
+            Log.e(LOG_TAG, "Unzip exception", e);
+        }
     }
 
 }

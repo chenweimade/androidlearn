@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/AnimationCoder.iml" filepath="$PROJECT_DIR$/AnimationCoder.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/collage-views/collage-views.iml" filepath="$PROJECT_DIR$/collage-views/collage-views.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cameraview/library/library.iml" filepath="$PROJECT_DIR$/cameraview/library/library.iml" />
     </modules>
   </component>
 </project>
