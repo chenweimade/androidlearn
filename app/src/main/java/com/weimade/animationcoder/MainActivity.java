@@ -30,13 +30,13 @@ public class MainActivity extends AppCompatActivity {
     static {
         System.loadLibrary("native-lib");
     }
-    public  static String INIT_FLAG = "initflag";// do not change
+    public  static String INIT_FLAG = "abcFlag";// do not change
     Button goPlayerBtn ;
     Button goCaptureBtn ;
 
     TextView tips;
     final   int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 100;
-
+    SharedPreferences prefs ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,20 +55,16 @@ public class MainActivity extends AppCompatActivity {
         tips = (TextView) findViewById(R.id.sample_text);
         tips.setText("初始化中，请稍后");
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean(INIT_FLAG, false)) {
             // git
             initApp();
             // mark first time has runned.
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean(INIT_FLAG, true);
-            editor.commit();
+
         }else {
-            goCaptureBtn.setVisibility(View.VISIBLE);
+            //goCaptureBtn.setVisibility(View.VISIBLE);
+            tips.setVisibility(View.INVISIBLE);
         }
-
-        // Example of a call to a native method
-
 
         goPlayerBtn = (Button) findViewById(R.id.goPlayerBtn);
         goPlayerBtn.setVisibility(View.INVISIBLE);
@@ -100,8 +96,6 @@ public class MainActivity extends AppCompatActivity {
         if(mMovieFiles.length > 0){//has inited
             //check the files count
             goPlayerBtn.setVisibility(View.VISIBLE);
-        }else {
-
         }
 
 
@@ -143,10 +137,17 @@ public class MainActivity extends AppCompatActivity {
                         MsgUtil.toastMsg(getApplicationContext(),"错误：解压素材文件失败！！！");
                         e.printStackTrace();
                     }
-                    goCaptureBtn.setVisibility(View.VISIBLE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean(INIT_FLAG, true);
+                    editor.commit();
+                    goPlayerBtn.setVisibility(View.VISIBLE);
+
+
+                    startActivity(new Intent(MainActivity.this, PlayMovieSurfaceActivity.class));
+                    //goCaptureBtn.setVisibility(View.VISIBLE);
                 }else{
                     MsgUtil.toastMsg(getApplicationContext(),"错误：测试素材文件下载失败！！！");
-                    goCaptureBtn.setVisibility(View.INVISIBLE);
+                    //goCaptureBtn.setVisibility(View.INVISIBLE);
                 }
             }
         });

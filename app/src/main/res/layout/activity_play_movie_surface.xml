@@ -22,6 +22,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:keepScreenOn="true"
     tools:context=".PlayMovieSurfaceActivity" >
 
     <Button
@@ -54,6 +55,11 @@
             android:layout_gravity="center" />
 
     </com.weimade.animationcoder.AspectFrameLayout>
+    <TextView
+        android:id="@+id/processTips"
+        android:layout_below="@+id/playMovie_afl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -66,16 +72,21 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/render"
-            android:text="开始渲染"/>
+            android:id="@+id/anination"
+            android:text="来一个动贴"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/anination"
-            android:text="来一个动贴"/>
+            android:id="@+id/render"
+            android:text="开始渲染"/>
 
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/playVideoBtn"
+            android:text="播播看"/>
 
     </LinearLayout>
 

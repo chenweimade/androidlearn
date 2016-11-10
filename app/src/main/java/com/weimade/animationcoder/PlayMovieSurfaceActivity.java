@@ -17,10 +17,13 @@
 package com.weimade.animationcoder;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,11 +35,14 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
@@ -57,6 +63,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import pl.droidsonroids.gif.GifDrawable;
 
@@ -115,7 +122,12 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
     private static final int ProcessAudio = 2;
     private static String collageViewTag = "collageViewTag";
     String gifPath = FileUtil.getPath()+"/mali.gif";
+    TextView processTips;
 
+    boolean hasMergeImgError = false;
+    boolean hasMergeAudioError = false;
+
+    private String mLastMovieFile;
 
     private Handler handler = new Handler() {
 
@@ -130,9 +142,9 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 HashMap<String,String> data = (HashMap<String,String>)msg.obj;
 
                 //声音与视频合成
-                String resPath = data.get("videoPath")+".result.mp4";
+                final String resPath = data.get("tmpFile")+".result.mp4";
                 String[] cmdMergeAudioVideo ={
-                        "-i", data.get("tmpFile"),
+                        "-i", data.get("tmpFile")+".noaudio.mp4",
                         "-itsoffset", data.get("applyTime"),
                         "-i", data.get("musicPath"),
                         "-filter_complex", "[0:a][1:a]amix",
@@ -146,27 +158,38 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                     ffmpeg.execute(cmdMergeAudioVideo, new ExecuteBinaryResponseHandler() {
 
                         @Override
-                        public void onStart() {}
+                        public void onStart() {
+                            processTips.setText("开始处理声音");
+
+                        }
 
                         @Override
                         public void onProgress(String message) {
+                            processTips.setText("渲染中。。"+message);
                             System.out.println(message);
                         }
 
                         @Override
                         public void onFailure(String message) {
                             System.out.println(message);
+                            hasMergeAudioError = true;
+                            processTips.setText("音频处理失败!");
+
                         }
 
                         @Override
                         public void onSuccess(String message) {
                             System.out.println(message);
-
+                            processTips.setText("声音处理成功!");
                         }
 
                         @Override
                         public void onFinish() {
-                            System.out.println("all finish!");
+                            if(!hasMergeAudioError){
+                                processTips.setText("全部处理完成!");
+                            }
+                            collageView.setVisibility(View.INVISIBLE);
+                            mLastMovieFile = resPath;
 
                         }
                     });
@@ -181,6 +204,8 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_movie_surface);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         mSurfaceView = (SurfaceView) findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
 
@@ -189,13 +214,19 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         // Need to create one of these fancy ArrayAdapter thingies, and specify the generic layout
         // for the widget itself.
         mMovieFiles = MiscUtils.getFiles(new File(FileUtil.getPath()), "*.mp4");
+
+        //for test start
+        mMovieFiles = new String[1];
+        mMovieFiles[0] = "video.mp4";
+        //for test start
+
+        processTips = (TextView) findViewById(R.id.processTips);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, mMovieFiles);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner.
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
-
 
         Button mAnination = (Button) findViewById(R.id.anination);
         mAnination.setOnClickListener(new View.OnClickListener() {
@@ -230,6 +261,8 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                         });
                         collageView.setOnTouchListener(touchListener);
                         aspectLayout.addView(collageView);
+                    }else{
+                        collageView.setVisibility(View.VISIBLE);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -244,7 +277,9 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Test case 1 clicked!\n");
-
+                if(collageView == null){
+                    processTips.setText("请先添加一个动贴！");
+                }
                 String videoPath = FileUtil.getPath() + "/" + mMovieFiles[mSelectedMovie];
                 File image = new File(gifPath);
                 BitmapFactory.Options bmOptions = new BitmapFactory.Options();
@@ -252,7 +287,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
 
 
                 String musicPath = FileUtil.getPath()+"/music.m4a";
-                int animationLen = 1;
+                int animationLen = 2;
                 //有形变的话，这里也会发生变化。。。
                 double bWidth = Math.sin(gifRotation)*bitmap.getHeight() + Math.cos(gifRotation)*bitmap.getWidth();
                 double bHeight = Math.sin(gifRotation)*bitmap.getWidth() + Math.cos(gifRotation)*bitmap.getHeight();
@@ -266,6 +301,23 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
 
             }
         });
+
+
+
+        Button playVideoBtn = (Button) findViewById(R.id.playVideoBtn);
+        playVideoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                collageView.setVisibility(View.INVISIBLE);
+                if(!StringUtils.isEmpty(mLastMovieFile) ){
+                    playVideo(new File(mLastMovieFile));
+                }else {
+                    processTips.setText("没有渲染的视频可以看呢！");
+
+                }
+            }
+        });
+
         updateControls();
     }
 
@@ -343,37 +395,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 Log.w(TAG, "movie already playing");
                 return;
             }
-
-            Log.d(TAG, "starting movie");
-            SpeedControlCallback callback = new SpeedControlCallback();
-            SurfaceHolder holder = mSurfaceView.getHolder();
-            Surface surface = holder.getSurface();
-
-            // Don't leave the last frame of the previous video hanging on the screen.
-            // Looks weird if the aspect ratio changes.
-            clearSurface(surface);
-
-            MoviePlayer player = null;
-            try {
-                 player = new MoviePlayer(
-                        new File(new File(FileUtil.getPath()), mMovieFiles[mSelectedMovie]), surface, callback);
-            } catch (IOException ioe) {
-                Log.e(TAG, "Unable to play movie", ioe);
-                surface.release();
-                return;
-            }
-
-            aspectLayout = (AspectFrameLayout) findViewById(R.id.playMovie_afl);
-            int width = player.getVideoWidth();
-            int height = player.getVideoHeight();
-            aspectLayout.setAspectRatio((double) width / height);
-            //holder.setFixedSize(width, height);
-
-            mPlayTask = new MoviePlayer.PlayTask(player, this);
-
-            mShowStopLabel = true;
-            updateControls();
-            mPlayTask.execute();
+            playVideo(new File(new File(FileUtil.getPath()), mMovieFiles[mSelectedMovie]));
         }
     }
 
@@ -481,7 +503,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         // example "[1:v] fade=t=in:st=1:d=0.1,fade=t=out:st=2:d=0.1,rotate=-30*PI/180:c=none:ow=rotw(iw):oh=roth(ih),scale=w=0.2*iw:h=0.5*ih [ov]; [0:v][ov] overlay=200:10 [v]",
 
 
-        final String tmpFile = videoPath+".noaudio.mp4";
+        final String tmpFile = videoPath+(System.currentTimeMillis());
         String[] cmdMergeGifVideo ={
                 "-i", videoPath,
                 "-itsoffset", String.valueOf(applyTime),
@@ -493,7 +515,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 "-c:a", "copy",
                 "-shortest",
                 "-async" ,"1",
-                tmpFile,
+                tmpFile+".noaudio.mp4",
         };
         System.out.println("CMD: "+StringUtils.join(cmdMergeGifVideo," "));
         try {
@@ -506,39 +528,78 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 @Override
                 public void onProgress(String message) {
                     System.out.println(message);
+                    processTips.setText("渲染中。。"+message);
                 }
 
                 @Override
                 public void onFailure(String message) {
                     System.out.println(message);
+                    hasMergeImgError = true;
+                    processTips.setText("图像处理失败！！");
                 }
 
                 @Override
                 public void onSuccess(String message) {
                     System.out.println(message);
-
-                }
-
-                @Override
-                public void onFinish() {
-
+                    processTips.setText("图像处理成功！");
                     HashMap map = new HashMap<String,String>();
                     map.put("videoPath",videoPath);
                     map.put("tmpFile",tmpFile);
                     map.put("applyTime",String.valueOf(applyTime));
                     map.put("musicPath",musicPath);
 
-                    Message message = Message.obtain();
-                    message.obj = map;
-                    message.what = ProcessAudio;
-                    handler.sendMessage(message);
+                    Message msg = Message.obtain();
+                    msg.obj = map;
+                    msg.what = ProcessAudio;
+                    handler.sendMessage(msg);
+                }
 
+                @Override
+                public void onFinish() {
                     System.out.println("graph finish!");
-
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
             // Handle if FFmpeg is already running
         }
     }
+
+    private void playVideo(File file){
+        if (mPlayTask != null) {
+            Log.w(TAG, "movie already playing");
+            return;
+        }
+
+        Log.d(TAG, "starting movie");
+        SpeedControlCallback callback = new SpeedControlCallback();
+        SurfaceHolder holder = mSurfaceView.getHolder();
+        Surface surface = holder.getSurface();
+
+        // Don't leave the last frame of the previous video hanging on the screen.
+        // Looks weird if the aspect ratio changes.
+        clearSurface(surface);
+
+        MoviePlayer player = null;
+        try {
+            player = new MoviePlayer(file, surface, callback);
+        } catch (IOException ioe) {
+            Log.e(TAG, "Unable to play movie", ioe);
+            surface.release();
+            return;
+        }
+
+        aspectLayout = (AspectFrameLayout) findViewById(R.id.playMovie_afl);
+        int width = player.getVideoWidth();
+        int height = player.getVideoHeight();
+        aspectLayout.setAspectRatio((double) width / height);
+        //holder.setFixedSize(width, height);
+
+        mPlayTask = new MoviePlayer.PlayTask(player, this);
+
+        mShowStopLabel = true;
+        updateControls();
+        mPlayTask.execute();
+    }
+
+
 }

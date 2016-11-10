@@ -42,7 +42,6 @@ dependencies {
     compile group: 'com.googlecode.android-query', name: 'android-query', version: '0.25.9'
 
     compile project(':collage-views')
-    compile project(':library')
 
     testCompile 'junit:junit:4.12'
 }

@@ -37,19 +37,11 @@
         android:id="@+id/goPlayerBtn" />
 
     <Button
-        android:text="InitDownload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/download"
-        android:layout_below="@+id/goPlayerBtn"
-        android:layout_alignEnd="@+id/goPlayerBtn" />
-
-    <Button
         android:text="CameraCapture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/captureBtn"
-        android:layout_below="@+id/download"
-        android:layout_alignStart="@+id/download"
+        android:layout_below="@+id/goPlayerBtn"
+        android:layout_alignStart="@+id/goPlayerBtn"
         android:layout_marginTop="12dp" />
 </RelativeLayout>

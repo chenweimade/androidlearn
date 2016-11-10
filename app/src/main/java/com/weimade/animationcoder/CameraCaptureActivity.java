@@ -204,7 +204,10 @@ public class CameraCaptureActivity extends Activity
 
         // Set the preview aspect ratio.
         AspectFrameLayout layout = (AspectFrameLayout) findViewById(R.id.cameraPreview_afl);
-        layout.setAspectRatio((double)  mCameraPreviewHeight/  mCameraPreviewWidth);
+        if(true){
+            layout.setAspectRatio((double)  mCameraPreviewWidth /   mCameraPreviewHeight);
+        }
+        layout.setAspectRatio((double)  mCameraPreviewWidth /   mCameraPreviewHeight);
 
         mGLView.onResume();
         mGLView.queueEvent(new Runnable() {
@@ -296,7 +299,7 @@ public class CameraCaptureActivity extends Activity
 
         // leave the frame rate set to default
         mCamera.setParameters(parms);
-        setCameraDisplayOrientation(CameraCaptureActivity.this,cameraId,mCamera);
+        //setCameraDisplayOrientation(CameraCaptureActivity.this,cameraId,mCamera);
         int[] fpsRange = new int[2];
         Camera.Size mCameraPreviewSize = parms.getPreviewSize();
         parms.getPreviewFpsRange(fpsRange);
